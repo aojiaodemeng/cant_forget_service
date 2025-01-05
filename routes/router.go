@@ -1,0 +1,22 @@
+package routes
+
+import (
+	"cant_forget/utils"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+func InitRouter() {
+	gin.SetMode(utils.AppMode)
+	r := gin.Default()
+
+	router := r.Group("api/vi")
+	{
+		router.GET("hello", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"msg": "ok",
+			})
+		})
+	}
+	r.Run(utils.HttpPort)
+}
