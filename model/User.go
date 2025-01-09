@@ -1,17 +1,37 @@
 package model
 
 import (
+	"cant_forget/utils/status_code"
 	"gorm.io/gorm"
 	"time"
 )
 
 type User struct {
 	gorm.Model
-	Username string     `gorm:"type:varchar(20);not null" json:"username"`
-	Password string     `gorm:"type:varchar(20);not null" json:"password"`
+	Username string     `gorm:"type:varchar(20);not null"`
+	Password string     `gorm:"type:varchar(20);not null"`
 	Email    *string    // A pointer to a string, allowing for null values
 	Age      uint8      // An unsigned 8-bit integer
 	Birthday *time.Time // A pointer to time.Time, can be null
 	Avatar   string
-	Role     int `gorm:"type:int" json:"role"`
+	Role     int `gorm:"type:int"`
+}
+
+// 查询用户是否存在
+func CheckUserExist(name string) (code int) {
+	var users User
+	db.Select("id").Where("username = ?", name).First(&users)
+	if users.ID > 0 {
+		return status_code.ERROR_USERNAME_USED // 1001
+	}
+	return status_code.SUCCESS
+}
+
+// 新增用户
+func CreateUser(data *User) int {
+	err := db.Create(&data).Error
+	if err != nil {
+		return status_code.ERROR
+	}
+	return status_code.SUCCESS
 }
