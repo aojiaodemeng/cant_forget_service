@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"cant_forget/middleware"
 	"cant_forget/model"
 	"cant_forget/utils/status_code"
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,17 @@ func EditUserInfo(c *gin.Context) {
 
 // 用户登录
 func Login(c *gin.Context) {
+	var data model.User
+	c.ShouldBindJSON(&data)
+	var token string
+	var code int
+	code = model.CheckLogin(data.Username, data.Password)
+	if code == status_code.SUCCESS {
+		token, _ = middleware.SetToken(data.Username)
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"msg": "ok",
+		"status":  code,
+		"message": status_code.GetErrMsg(code),
+		"token":   token,
 	})
 }
