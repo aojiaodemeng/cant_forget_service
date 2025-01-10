@@ -31,7 +31,7 @@ func InitDb() {
 		fmt.Printf("连接数据库成功")
 	}
 
-	db.AutoMigrate(&User{}, &FileCategory{}, &CourseCategory{})
+	db.AutoMigrate(&User{}, &PostType{}, &CourseCategory{}, &Post{}, &PostMap{}, &Column{})
 
 	sqlDB, _ := db.DB()
 

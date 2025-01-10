@@ -5,6 +5,7 @@ import (
 	"cant_forget/utils/status_code"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // 添加分类
@@ -15,9 +16,6 @@ func AddCourseCategory(c *gin.Context) {
 	if code == status_code.SUCCESS {
 		model.CreateCourseCategory(&data)
 	}
-	if code == status_code.ERROR_FILE_CATEGORY_USED {
-		code = status_code.ERROR_FILE_CATEGORY_USED
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"status":  code,
 		"data":    data,
@@ -26,8 +24,8 @@ func AddCourseCategory(c *gin.Context) {
 }
 
 // 查询分类列表
-func GetCourseCategories(c *gin.Context) {
-	data := model.GetCourseCategories()
+func GetCourseCategoryList(c *gin.Context) {
+	data := model.GetCourseCategoryList()
 	code = status_code.SUCCESS
 	c.JSON(http.StatusOK, gin.H{
 		"status":  code,
@@ -39,7 +37,8 @@ func GetCourseCategories(c *gin.Context) {
 // 编辑分类
 func EditCourseCategory(c *gin.Context) {
 	var data model.CourseCategory
-	id := c.Param("id")
+	//id := c.Param("id")
+	id, _ := strconv.Atoi(c.Param("id"))
 	c.ShouldBindJSON(&data)
 	model.EditCourseCategory(id, &data)
 	code = status_code.SUCCESS

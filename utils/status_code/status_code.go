@@ -16,7 +16,7 @@ const (
 
 	ERROR_USER_NO_RIGHT = 1008
 
-	ERROR_FILE_CATEGORY_USED = 3001
+	ERROR_POST_TYPE_USED = 3001
 )
 
 var codeMsg = map[int]string{
@@ -32,7 +32,7 @@ var codeMsg = map[int]string{
 	ERROR_TOKEN_WRONG:      "TOKEN不正确",
 	ERROR_TOKEN_TYPE_WRONG: "TOKEN格式错误",
 
-	ERROR_FILE_CATEGORY_USED: "文件类型已存在",
+	ERROR_POST_TYPE_USED: "文件类型已存在",
 
 	ERROR_USER_NO_RIGHT: "该用户无权限",
 }

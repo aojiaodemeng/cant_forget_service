@@ -15,10 +15,7 @@ func InitRouter() {
 	auth.Use(middleware.JwtToken())
 	{
 		auth.GET("user/editUserInfo", v1.EditUserInfo)
-		auth.POST("file/category/add", v1.AddFileCategory)
-		auth.GET("file/category/list", v1.GetFileCategories)
-		auth.PUT("file/category/:id", v1.EditFileCategory)
-		auth.DELETE("file/category/:id", v1.DeleteFileCategory)
+
 	}
 
 	router := r.Group("api/v1")
@@ -27,10 +24,22 @@ func InitRouter() {
 		router.POST("login", v1.Login)
 
 		router.POST("course/category/add", v1.AddCourseCategory)
-		router.GET("course/category/list", v1.GetCourseCategories)
+		router.GET("course/category/list", v1.GetCourseCategoryList)
 		router.PUT("course/category/:id", v1.EditCourseCategory)
 		router.DELETE("course/category/:id", v1.DeleteCourseCategory)
 
+		router.POST("post/add", v1.AddPost)
+		router.GET("post/list", v1.GetCourseCategoryList)
+		router.PUT("post/:id", v1.EditCourseCategory)
+		router.DELETE("course/:id", v1.DeleteCourseCategory)
+
+		router.POST("post/type/add", v1.AddPostType)
+		router.GET("post/type/list", v1.GetPostTypeList)
+		router.PUT("post/type/:id", v1.EditPostType)
+		router.DELETE("post/type/:id", v1.DeletePostType)
+
+		router.POST("column/add", v1.AddColumn)
+		router.GET("column/list", v1.GetColumnList)
 	}
 
 	r.Run(utils.HttpPort)

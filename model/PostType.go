@@ -5,24 +5,25 @@ import (
 	"gorm.io/gorm"
 )
 
-type FileCategory struct {
+type PostType struct {
 	gorm.Model
-	ID   string `gorm:"primary_key;"`
+	Id   uint   `gorm:"not null;unique;primary_key;comment:帖子类型ID;size:90"`
 	Name string `gorm:"type:varchar(20);not null"`
+	Desc string `gorm:"type:varchar(200)"`
 }
 
 // 查询分类是否存在
-func CheckFileCategoryExist(id string) (code int) {
-	var fileCategory FileCategory
-	db.Select("id").Where("id = ?", id).First(&fileCategory)
-	if fileCategory.ID != "" {
-		return status_code.ERROR_FILE_CATEGORY_USED
+func CheckPostTypeExist(name string) (code int) {
+	var postType PostType
+	db.Select("id").Where("name = ?", name).First(&postType)
+	if postType.Id > 0 {
+		return status_code.ERROR_POST_TYPE_USED
 	}
 	return status_code.SUCCESS
 }
 
 // 新增文件分类
-func CreateFileCategory(data *FileCategory) int {
+func CreatePostType(data *PostType) int {
 	err := db.Create(&data).Error
 	if err != nil {
 		return status_code.ERROR // 500
@@ -31,8 +32,8 @@ func CreateFileCategory(data *FileCategory) int {
 }
 
 // 查询分类列表
-func GetFileCategories() []FileCategory {
-	var fileCategories []FileCategory
+func GetFileCategories() []PostType {
+	var fileCategories []PostType
 	err = db.Find(&fileCategories).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil
@@ -41,11 +42,11 @@ func GetFileCategories() []FileCategory {
 }
 
 // 编辑分类
-func EditFileCategory(id string, data *FileCategory) int {
-	var fileCategory FileCategory
+func EditPostType(id int, data *PostType) int {
+	var postType PostType
 	var maps = make(map[string]interface{})
 	maps["name"] = data.Name
-	err = db.Model(&fileCategory).Where("id=?", id).Updates(maps).Error
+	err = db.Model(&postType).Where("id=?", id).Updates(maps).Error
 	if err != nil {
 		return status_code.ERROR
 	}
@@ -53,9 +54,9 @@ func EditFileCategory(id string, data *FileCategory) int {
 }
 
 // 删除分类
-func DeleteFileCategory(id string) int {
-	var fileCategory FileCategory
-	err = db.Where("id=?", id).Delete(&fileCategory).Error
+func DeletePostType(id string) int {
+	var postType PostType
+	err = db.Where("id=?", id).Delete(&postType).Error
 	if err != nil {
 		return status_code.ERROR
 	}

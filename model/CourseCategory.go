@@ -7,16 +7,17 @@ import (
 
 type CourseCategory struct {
 	gorm.Model
-	ID   string `gorm:"primary_key;"`
+	Id   uint   `gorm:"not null;unique;primary_key;comment:课程类型ID;size:90"`
 	Name string `gorm:"type:varchar(20);not null"`
+	Desc string `gorm:"type:varchar(200)"`
 }
 
 // 查询分类是否存在
-func CheckCourseCategoryExist(id string) (code int) {
+func CheckCourseCategoryExist(id uint) (code int) {
 	var courseCategory CourseCategory
 	db.Select("id").Where("id = ?", id).First(&courseCategory)
-	if courseCategory.ID != "" {
-		return status_code.ERROR_FILE_CATEGORY_USED
+	if courseCategory.ID > 0 {
+		return status_code.ERROR_POST_TYPE_USED
 	}
 	return status_code.SUCCESS
 }
@@ -31,7 +32,7 @@ func CreateCourseCategory(data *CourseCategory) int {
 }
 
 // 查询分类列表
-func GetCourseCategories() []CourseCategory {
+func GetCourseCategoryList() []CourseCategory {
 	var courseCategories []CourseCategory
 	err = db.Find(&courseCategories).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -41,7 +42,7 @@ func GetCourseCategories() []CourseCategory {
 }
 
 // 编辑分类
-func EditCourseCategory(id string, data *CourseCategory) int {
+func EditCourseCategory(id int, data *CourseCategory) int {
 	var courseCategory CourseCategory
 	var maps = make(map[string]interface{})
 	maps["name"] = data.Name
