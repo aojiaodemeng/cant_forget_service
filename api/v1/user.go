@@ -18,7 +18,7 @@ func RegisterUser(c *gin.Context) {
 	}
 	code = model.CheckUserExist(data.Username)
 	if code == status_code.SUCCESS {
-		model.CreateUser(&data)
+		code = model.CreateUser(&data)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"status":  code,

@@ -1,49 +1,74 @@
 package model
 
 import (
+	"cant_forget/utils"
 	"cant_forget/utils/status_code"
+	"fmt"
+	"github.com/mehanizm/airtable"
 	"gorm.io/gorm"
 )
 
 type Post struct {
 	gorm.Model
-	ID               uint             `gorm:"not null;unique;primary_key;comment:帖子ID;size:90"`
-	Title            string           `gorm:"type:varchar(100);not null"`
-	Content          string           `gorm:"type:longtext"`
-	Img              string           `gorm:"type:varchar(100)"`
-	Audio            string           `gorm:"type:varchar(100)"`
-	Video            string           `gorm:"type:varchar(100)"`
-	PostType         PostType         `gorm:"many2many:post_map;"`
-	CourseCategories []CourseCategory `gorm:"many2many:post_map;"`
-	Columns          []Column         `gorm:"many2many:post_map;"`
+	ID      string   `gorm:"not null;unique;primary_key;comment:帖子ID;size:90"`
+	Title   string   `gorm:"type:varchar(100);not null"`
+	Content string   `gorm:"type:longtext"`
+	Img     string   `gorm:"type:varchar(100)"`
+	Audio   string   `gorm:"type:varchar(100)"`
+	Video   string   `gorm:"type:varchar(100)"`
+	Courses []Course `gorm:"many2many:post_map;"`
+	Columns []string `gorm:"many2many:post_map;"`
+	Type    string
 }
 
 type CreatePostReqParams struct {
-	Title       string `gorm:"type:varchar(20);not null"`
-	Content     string `gorm:"type:longtext"`
-	Img         string `gorm:"type:varchar(100)"`
-	Audio       string `gorm:"type:varchar(100)"`
-	Video       string `gorm:"type:varchar(100)"`
-	PostTypeId  uint
-	CategoryIds []uint
-	ColumnIds   []uint
+	Title   string `gorm:"type:varchar(20);not null"`
+	Content string `gorm:"type:longtext"`
+	Img     string `gorm:"type:varchar(100)"`
+	//Audio       string `gorm:"type:varchar(100)"`
+	//Video       string `gorm:"type:varchar(100)"`
+	Type    string
+	Columns []string
+	Courses []string
+	Efactor float32
 }
 
 // 新增文章
-func CreatePost(data *Post) int {
+func CreatePost(data *CreatePostReqParams) int {
+	recordsToSend := &airtable.Records{
+		Records: []*airtable.Record{
+			{
+				Fields: map[string]any{
+					"title":   data.Title,
+					"content": data.Content,
+					"img":     data.Img,
+					"Columns": data.Columns,
+					"Courses": data.Courses,
+					"type":    data.Type,
+					"efactor": data.Efactor,
+				},
+			},
+		},
+	}
 
-	// 创建一条文章记录，跳过所有关联字段
-	// 备注：去掉.Omit(clause.Associations)的话，会在关联的表（比如Column表）里新建记录
-	// 但是业务是，只是选择了（或者说关联了）标签、专栏、分类，而不是创建它们
-	//err := db.Omit(clause.Associations).Create(&test).Error
+	table := airtableClient.GetTable(utils.AirtableDBId, "Post")
+	_, err := table.AddRecords(recordsToSend)
 
-	err := db.Create(&data).Error
 	if err != nil {
+		print(err.Error())
 		return status_code.ERROR // 500
 	}
-	//// 添加关联
-	////db.Model(&test).Association("Columns").Append(&Column{})
-	//CreateMap(&data)
-
 	return status_code.SUCCESS
+}
+
+// 查询列表
+func GetPostList(columnUuid string) *airtable.Records {
+	table := airtableClient.GetTable(utils.AirtableDBId, "Post")
+	filterFormula := fmt.Sprintf("FIND('%s', {columnsStr}) > 0", columnUuid)
+	records, err := table.GetRecords().WithFilterFormula(filterFormula).Do()
+
+	if err != nil {
+		return nil
+	}
+	return records
 }

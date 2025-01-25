@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
-	model.InitDb()
+	model.InitAirtable()
+	//model.InitDb()
 	routes.InitRouter()
 }

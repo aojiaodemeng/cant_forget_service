@@ -1,8 +1,11 @@
 package model
 
 import (
+	"cant_forget/utils"
 	"cant_forget/utils/status_code"
 	"encoding/base64"
+	"fmt"
+	"github.com/mehanizm/airtable"
 	"golang.org/x/crypto/scrypt"
 	"gorm.io/gorm"
 	"log"
@@ -22,18 +25,38 @@ type User struct {
 
 // 查询用户是否存在
 func CheckUserExist(name string) (code int) {
-	var users User
-	db.Select("id").Where("username = ?", name).First(&users)
-	if users.ID > 0 {
-		return status_code.ERROR_USERNAME_USED // 1001
+	table := airtableClient.GetTable(utils.AirtableDBId, "User")
+	filterFormula := fmt.Sprintf("AND({username}='%s')", name)
+	records, _ := table.GetRecords().
+		WithFilterFormula(filterFormula).
+		Do()
+	if len(records.Records) > 0 {
+		fmt.Printf("已经存在")
+		return status_code.ERROR_USERNAME_USED
 	}
+	fmt.Printf("不存在")
 	return status_code.SUCCESS
 }
 
 // 新增用户
 func CreateUser(data *User) int {
 	data.Password = ScryptPw(data.Password)
-	err := db.Create(&data).Error
+	recordsToSend := &airtable.Records{
+		Records: []*airtable.Record{
+			{
+				Fields: map[string]any{
+					"username": data.Username,
+					"password": data.Password,
+					"email":    data.Email,
+					"age":      data.Age,
+					"avatar":   data.Avatar,
+				},
+			},
+		},
+	}
+
+	table := airtableClient.GetTable(utils.AirtableDBId, "User")
+	_, err := table.AddRecords(recordsToSend)
 	if err != nil {
 		return status_code.ERROR
 	}
@@ -57,10 +80,12 @@ func ScryptPw(password string) string {
 // 登录验证
 func CheckLogin(username string, password string) int {
 	var user User
-	db.Where("username = ?", username).First(&user)
-	if user.ID == 0 {
+	code := CheckUserExist(username)
+
+	if code == status_code.SUCCESS {
 		return status_code.ERROR_USER_NOT_EXIST
 	}
+
 	if ScryptPw(password) != user.Password {
 		return status_code.ERROR_PASSWORD_WRONG
 	}

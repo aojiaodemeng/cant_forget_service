@@ -3,14 +3,22 @@ package model
 import (
 	"cant_forget/utils"
 	"fmt"
+	"github.com/mehanizm/airtable"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"net/http"
 	"time"
 )
 
 var db *gorm.DB
 var err error
+var airtableClient *airtable.Client
+
+type DefaultData struct {
+	Code int
+	Data interface{}
+}
 
 // 连接配置数据库
 func InitDb() {
@@ -31,11 +39,16 @@ func InitDb() {
 		fmt.Printf("连接数据库成功")
 	}
 
-	db.AutoMigrate(&User{}, &PostType{}, &CourseCategory{}, &Post{}, &PostMap{}, &Column{})
+	db.AutoMigrate(&User{}, &Course{}, &Post{}, &Column{})
 
 	sqlDB, _ := db.DB()
 
 	sqlDB.SetMaxIdleConns(10)                  // SetMaxIdleConns 设置空闲连接池中连接的最大数量
 	sqlDB.SetMaxOpenConns(100)                 // SetMaxOpenConns 设置打开数据库连接的最大数量
 	sqlDB.SetConnMaxLifetime(10 * time.Second) // SetConnMaxLifetime 设置了连接可复用的最大时间
+}
+
+func InitAirtable() {
+	airtableClient = airtable.NewClient(utils.AirtableToken)
+	airtableClient.SetCustomClient(http.DefaultClient)
 }

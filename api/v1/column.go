@@ -21,7 +21,9 @@ func AddColumn(c *gin.Context) {
 
 // 查询列表
 func GetColumnList(c *gin.Context) {
-	data := model.GetColumnList()
+	//courseId, _ := strconv.Atoi(c.Query("courseId"))
+	courseUuid := c.Query("courseUuid")
+	data := model.GetColumnList(courseUuid)
 	code = status_code.SUCCESS
 	c.JSON(http.StatusOK, gin.H{
 		"status":  code,
